@@ -41,8 +41,8 @@ ps_phases = reshape(ps, Ntx, []); %% move into function distribute(seq, n_tx);
 
 %% beamforming
 abs_scan_limit = 1/lambda;
-scanning_theta = -90 : 1 : 90; 
-scanning_phi = -90 : 1 : 90;
+scanning_theta = -45 : 1 : 45; 
+scanning_phi = -45 : 1 : 45;
     
 %% Signal forming
 received_signals = zeros(Nrx, size(ps_phases, 2)); % TODO: make this as cell
@@ -51,8 +51,8 @@ for rx = 1 : Nrx
         x_tx = tx_e(tx);
         y_rx = rx_e(rx);
 
-        received_phases = exp(1j * 2 * pi / lambda * (x_tx * sind(targets.elevation) * cosd(targets.azimuth) + ...
-                                                       y_rx * sind(targets.elevation) * sind(targets.azimuth)));
+        received_phases = exp(1j * 2 * pi / lambda * (x_tx * sind(targets.azimuth) * cosd(targets.elevation) + ...
+                                                       y_rx * sind(targets.elevation)));
 
         received_signals(rx, :) = received_signals(rx, :) + ps_phases(tx, :) * received_phases;
     end
@@ -75,8 +75,8 @@ for ai = 1:length(scanning_phi)
         azim = scanning_phi(ai);
         elev = scanning_theta(ei);
         [RX, TX] = ndgrid(rx_e, tx_e);
-        sv = exp(1j*2*pi/lambda * (RX .* sind(elev) .* cosd(azim) + ...
-                                   TX .* sind(elev) .* sind(azim)));
+        sv = exp(1j*2*pi/lambda * (TX .* sind(azim) .* cosd(elev) + ...
+                                   RX .* sind(elev)));
     
         % beams{ai, ei} = sum(received_signal .* sv);
         
@@ -85,17 +85,48 @@ for ai = 1:length(scanning_phi)
         % filter target maximum
         % max_map(ai, ei) = ...;
         % mean_filt_map(ai, ei) = ... ;
-        rp(ai, ei) = mean(abs(beams{ai, ei}).^2); % probably they are reversed (I dunno)
-        % rms_filt_map(ai, ei)= ...;
+        max_map(ai, ei) = max(abs(beams{ai, ei}).^2);
+        mean_filt_map(ai, ei) = mean(abs(beams{ai, ei}.^2));
+        rms_filt_map(ai, ei)= rms(abs(beams{ai, ei}.^2));
   
     end
 end
 %% Visualisation
 figure;
-imagesc(scanning_phi, scanning_theta, 10*log10(rp));
+imagesc(scanning_phi, scanning_theta, max_map);
 xlabel('Азимут (градусы)');
 ylabel('Угол места (градусы)');
-title('Диаграмма направленности');
-colormap('jet');
+title('Угловые координаты цели (max)');
 grid on;
 
+figure;
+imagesc(scanning_phi, scanning_theta, mean_filt_map);
+xlabel('Азимут (градусы)');
+ylabel('Угол места (градусы)');
+title('Угловые координаты цели (mean)');
+grid on;
+
+
+figure;
+imagesc(scanning_phi, scanning_theta, rms_filt_map);
+xlabel('Азимут (градусы)');
+ylabel('Угол места (градусы)');
+title('Угловые координаты цели (rms filter)');
+grid on;
+
+
+% virt_amp_vec = zeros(Ntx*Nrx,1);
+% for i = 1:Ntx
+%     for j = 1:Nrx
+%         idx = (j-1)*Ntx + i;
+%         virt_amp_vec(idx) = sqrt(sum(virt_array{i, j}.^2)); % можно изменить на sqrt(sum(....^2)) если хотите мощность
+%     end
+% end
+
+% figure;
+% scatter3(Xv, Yv, virt_amp_vec, 50, virt_amp_vec, 'filled');
+% xlabel('X (Tx)');
+% ylabel('Y (Rx)');
+% zlabel('Mean |signal|');
+% title('Мощность в виртуальной решетке');
+% colorbar;
