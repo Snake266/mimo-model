@@ -34,18 +34,18 @@ pnSequence = comm.PNSequence('Polynomial', poly, ...
     'InitialConditions', initial, ...
     'SamplesPerFrame', 2^n_mseq - 1);
 ps = step(pnSequence);
+ps = 2 * ps - 1;
 
 
 ps_phases = reshape(ps, Ntx, []); %% move into function distribute(seq, n_tx);
 
 %% beamforming
 abs_scan_limit = 1/lambda;
-scanning_theta = -abs : 1 : 90; 
+scanning_theta = -90 : 1 : 90; 
 scanning_phi = -90 : 1 : 90;
     
 %% Signal forming
-received_signals = zeros(Nrx, size(ps_phases, 2));
-idx = 1;
+received_signals = zeros(Nrx, size(ps_phases, 2)); % TODO: make this as cell
 for rx = 1 : Nrx
     for tx = 1 : Ntx
         x_tx = tx_e(tx);
@@ -58,7 +58,14 @@ for rx = 1 : Nrx
     end
 end
 %% Virtual array forming
-virt_array = cell{Ntx, Nrx};
+virt_array = cell(Nrx, Ntx);
+for rx = 1 : Nrx
+    for tx = 1 : Ntx
+        corr_val = xcorr(received_signals(rx, :), ps_phases(tx, :));
+
+        virt_array{rx, tx} = corr_val;
+    end
+end
 
 
 %% Beamforming
