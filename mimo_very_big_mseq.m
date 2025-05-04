@@ -12,7 +12,7 @@ targets = struct( ...
 max_time = max(targets.range) * 2 /c;
 
 fc = 24e9;
-lambda = 1/fc;
+lambda = c/fc;
 d = lambda;
 
 %% Tx-Rx array
@@ -61,7 +61,7 @@ end
 virt_array = cell(Nrx, Ntx);
 for rx = 1 : Nrx
     for tx = 1 : Ntx
-        corr_val = xcorr(received_signals(rx, :), ps_phases(tx, :));
+        corr_val = xcorr(received_signals(rx, :), ps_phases(tx, :), 0);
 
         virt_array{rx, tx} = corr_val;
     end
@@ -69,32 +69,33 @@ end
 
 
 %% Beamforming
-beams = cell{Ntx, Nrx};
-
+beams = cell(Nrx, Ntx);
 for ai = 1:length(scanning_phi)
     for ei = 1:length(scanning_theta)
         azim = scanning_phi(ai);
         elev = scanning_theta(ei);
-
-        sv = exp(1j*2*pi/lambda * (Xv .* sind(elev) .* cosd(azim) + ...
-                                   Yv .* sind(elev) .* sind(azim)));
+        [RX, TX] = ndgrid(rx_e, tx_e);
+        sv = exp(1j*2*pi/lambda * (RX .* sind(elev) .* cosd(azim) + ...
+                                   TX .* sind(elev) .* sind(azim)));
+    
+        % beams{ai, ei} = sum(received_signal .* sv);
         
-        beams{ai, ei} = sum(received_signals .* sv);
+        weighted = cellfun(@(v, s) v .* s, virt_array, num2cell(sv), 'UniformOutput', false); % Apply the steeting vector on every element of the array
+        beams{ai, ei} = sum(cat(1, weighted{:}), 1); % glue all elements ([Nrx*Ntx, L]) and sum them 
         % filter target maximum
-
-        max_map(ai, ei) = ...;
-        mean_filt_map(ai, ei) = ...;
-        rms_filt_map(ai, ei)= ...;
-       
+        % max_map(ai, ei) = ...;
+        % mean_filt_map(ai, ei) = ... ;
+        rp(ai, ei) = mean(abs(beams{ai, ei}).^2); % probably they are reversed (I dunno)
+        % rms_filt_map(ai, ei)= ...;
+  
     end
 end
-power_map = power_map / max(power_map(:));
 %% Visualisation
-%TODO
 figure;
-imagesc(scanning_phi, scanning_theta, 10*log10(power_map));
+imagesc(scanning_phi, scanning_theta, 10*log10(rp));
 xlabel('Азимут (градусы)');
 ylabel('Угол места (градусы)');
 title('Диаграмма направленности');
 colormap('jet');
 grid on;
+
