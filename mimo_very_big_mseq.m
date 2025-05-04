@@ -69,7 +69,10 @@ end
 
 
 %% Beamforming
-beams = cell(Nrx, Ntx);
+beams = cell(size(scanning_phi, 2), size(scanning_theta, 2));
+max_map = zeros(size(scanning_phi, 2), size(scanning_theta, 2));
+mean_filt_map = zeros(size(scanning_phi, 2), size(scanning_theta, 2));
+rms_filt_map = zeros(size(scanning_phi, 2), size(scanning_theta, 2));
 for ai = 1:length(scanning_phi)
     for ei = 1:length(scanning_theta)
         azim = scanning_phi(ai);
@@ -83,8 +86,6 @@ for ai = 1:length(scanning_phi)
         weighted = cellfun(@(v, s) v .* s, virt_array, num2cell(sv), 'UniformOutput', false); % Apply the steeting vector on every element of the array
         beams{ai, ei} = sum(cat(1, weighted{:}), 1); % glue all elements ([Nrx*Ntx, L]) and sum them 
         % filter target maximum
-        % max_map(ai, ei) = ...;
-        % mean_filt_map(ai, ei) = ... ;
         max_map(ai, ei) = max(abs(beams{ai, ei}).^2);
         mean_filt_map(ai, ei) = mean(abs(beams{ai, ei}.^2));
         rms_filt_map(ai, ei)= rms(abs(beams{ai, ei}.^2));
