@@ -39,7 +39,6 @@ ps = 2 * ps - 1;
 
 ps_phases = reshape(ps, Ntx, []); %% move into function distribute(seq, n_tx);
 
-%% beamforming
 abs_scan_limit = 1/lambda;
 scanning_theta = -45 : 1 : 45; 
 scanning_phi = -45 : 1 : 45;
@@ -78,7 +77,7 @@ for ai = 1:length(scanning_phi)
         azim = scanning_phi(ai);
         elev = scanning_theta(ei);
         [RX, TX] = ndgrid(rx_e, tx_e);
-        sv = exp(1j*2*pi/lambda * (TX .* sind(azim) .* cosd(elev) + ...
+        sv = exp(-1j*2*pi/lambda * (TX .* sind(azim) .* cosd(elev) + ...
                                    RX .* sind(elev)));
     
         % beams{ai, ei} = sum(received_signal .* sv);
@@ -128,6 +127,6 @@ grid on;
 % scatter3(Xv, Yv, virt_amp_vec, 50, virt_amp_vec, 'filled');
 % xlabel('X (Tx)');
 % ylabel('Y (Rx)');
-% zlabel('Mean |signal|');
 % title('Мощность в виртуальной решетке');
 % colorbar;
+
