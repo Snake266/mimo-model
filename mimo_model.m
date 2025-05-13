@@ -27,7 +27,7 @@ function beams = mimo_model(tx_signals, tx_e, rx_e, azims, elevs, targets, lambd
     virt_array = cell(Nrx, Ntx);
     for rx = 1 : Nrx
         for tx = 1 : Ntx
-            corr_val = xcorr(received_signals(rx, :), tx_signals(tx, :), 0);
+            corr_val = xcorr(received_signals(rx, :), tx_signals(tx, :));
             virt_array{rx, tx} = corr_val;
         end
     end
@@ -43,7 +43,8 @@ function beams = mimo_model(tx_signals, tx_e, rx_e, azims, elevs, targets, lambd
                                         RX .* sind(elev)));
             weighted = cellfun(@(v, s) v .* s, virt_array, num2cell(sv), 'UniformOutput', false);    % apply the steering vector
                                                                                                     % on every element of the array
-            beams{ai, ei} = sum(cat(1, weighted{:}), 1); % glue all elements ([Nrx * Ntx, L]) and sum them
+            
+            beams{ai, ei} = sum(cell2mat(weighted)); % squash 8x8 cell into one array
         end
     end
 end
