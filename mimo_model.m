@@ -34,9 +34,11 @@ function beams = mimo_model(tx_signals, tx_e, rx_e, azims, elevs, targets, lambd
 
     %% Beamforming
     beams = zeros(length(azims), length(elevs), length(virt_array));
-    for plane = 1 : length(virt_array)
-        for ai = 1 : length(azims)
-            for ei = 1 : length(elevs)
+    Lai = length(azims);
+    Lei = length(elevs);
+    parfor plane = 1 : length(virt_array)
+        for ai = 1 : Lai
+            for ei = 1 : Lei
                 azim = azims(ai);
                 elev = elevs(ei);
                 [RX, TX] = ndgrid(rx_e, tx_e);
@@ -46,7 +48,7 @@ function beams = mimo_model(tx_signals, tx_e, rx_e, azims, elevs, targets, lambd
                 weighted = tmp .* sv;    % apply the steering vector
                                          % on every element of the array
             
-                beams(ai, ei, plane) = sum(weighted, 'all'); % squash 8x8 cell into one array
+                beams(ei, ai, plane) = sum(weighted, 'all'); % squash 8x8 cell into one array
             end
         end
     end
