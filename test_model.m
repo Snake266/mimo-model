@@ -32,23 +32,44 @@ for i = 1 : Ntx - 1
 end
 
 abs_scan_limit = 1/lambda;
-scanning_theta = -25 : 1 : 25; 
-scanning_phi = -25 : 1 : 25;
+scanning_theta = -25 : 1 : 25;
+scanning_phi = -5 : 1 : 45;
 
 beams = mimo_model(new_pss, tx_e, rx_e, scanning_phi, scanning_theta, targets, lambda);
-data = cellfun(@(x) mean(abs(x .^ 2)), beams, 'UniformOutput', false);
-data_mat = cell2mat(data);
 
-[est_azim, est_elev, azim_idx, elev_idx] = find_max_direction(data_mat, scanning_phi, scanning_theta)
+%% Find angles of maximums
+tmp_plane_data = max(abs(beams), [], 3); % required to find azimuth and elevation of maximums
+[est_azim, est_elev, azim_idx, elev_idx] = find_max_direction(tmp_plane_data, scanning_phi, scanning_theta)
+clear tmp_plane_data;
+%% find range maximum
+[r_max, r_idx] = max(beams(elev_idx, azim_idx, :));
 
-window = 100;
+%% filter maximum
+window = 10;
+
+filtered_beams = beams;
+filtered_beams(:, :, r_idx - window : r_idx + window) = 0;
 
 
-% %% Visualisation
+
+%% Visualisation
 figure;
-imagesc(scanning_phi, scanning_theta, cell2mat(data));
+mesh(scanning_phi, scanning_theta, max(abs(filtered_beams), [], 3));
 xlabel('Азимут (градусы)');
 ylabel('Угол места (градусы)');
-title('Угловые координаты цели');
+title('Угловые координаты цели (max)');
 grid on;
 
+figure;
+mesh(scanning_phi, scanning_theta, mean(abs(filtered_beams), 3));
+xlabel('Азимут (градусы)');
+ylabel('Угол места (градусы)');
+title('Угловые координаты цели (mean)');
+grid on;
+
+figure;
+mesh(scanning_phi, scanning_theta, rms(abs(filtered_beams), 3));
+xlabel('Азимут (градусы)');
+ylabel('Угол места (градусы)');
+title('Угловые координаты цели (rms)');
+grid on;
