@@ -54,22 +54,29 @@ filtered_beams(:, :, r_idx - window : r_idx + window) = 0;
 
 %% Visualisation
 figure;
+mesh(scanning_phi, scanning_theta, max(abs(beams), [], 3));
+xlabel('Азимут (градусы)');
+ylabel('Угол места (градусы)');
+title('Угловые координаты цели (regular max)');
+grid on;
+
+figure;
 mesh(scanning_phi, scanning_theta, max(abs(filtered_beams), [], 3));
 xlabel('Азимут (градусы)');
 ylabel('Угол места (градусы)');
-title('Угловые координаты цели (max)');
+title('Отфильтрованные угловые координаты цели (max)');
 grid on;
 
 figure;
 mesh(scanning_phi, scanning_theta, mean(abs(filtered_beams), 3));
 xlabel('Азимут (градусы)');
 ylabel('Угол места (градусы)');
-title('Угловые координаты цели (mean)');
+title('Отфировальные угловые координаты цели (mean)');
 grid on;
 
 figure;
 mesh(scanning_phi, scanning_theta, rms(abs(filtered_beams), 3));
 xlabel('Азимут (градусы)');
 ylabel('Угол места (градусы)');
-title('Угловые координаты цели (rms)');
+title('Отфильтрованные угловые координаты цели (rms)');
 grid on;
