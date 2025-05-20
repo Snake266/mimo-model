@@ -33,7 +33,7 @@ function beams = mimo_model(tx_signals, tx_e, rx_e, azims, elevs, targets, lambd
     end
 
     %% Beamforming
-    beams = zeros(length(azims), length(elevs), length(virt_array));
+    beams = zeros(length(elevs), length(azims), length(virt_array));
     Lai = length(azims);
     Lei = length(elevs);
     parfor plane = 1 : length(virt_array)

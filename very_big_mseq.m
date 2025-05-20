@@ -33,8 +33,8 @@ for i = 1 : Ntx - 1
 end
 
 abs_scan_limit = 1/lambda;
-scanning_theta = -25 : 1 : 25;
-scanning_phi = -5 : 1 : 45;
+scanning_theta = -45 : 1 : 50;
+scanning_phi = -34 : 1 : 40;
 
 beams = mimo_model(new_pss, tx_e, rx_e, scanning_phi, scanning_theta, targets, lambda);
 
@@ -55,18 +55,19 @@ filtered_beams(:, :, r_idx - window / 2 : r_idx + window / 2) = 0;
 
 %% Visualisation
 figure;
-mesh(scanning_phi, scanning_theta, max(abs(beams), [], 3));
+imagesc(scanning_phi, scanning_theta, max(abs(beams), [], 3));
 xlabel('Азимут (градусы)');
 ylabel('Угол места (градусы)');
 title('Угловые координаты цели (regular max)');
 grid on;
 
 figure;
-imagesc(scanning_phi, scanning_theta, max(abs(beams), [], 3));
+mesh(scanning_phi, scanning_theta, max(abs(beams), [], 3));
 xlabel('Азимут (градусы)');
 ylabel('Угол места (градусы)');
 title('Угловые координаты цели (regular max)');
 grid on;
+
 
 figure;
 mesh(scanning_phi, scanning_theta, max(abs(filtered_beams), [], 3));
@@ -76,11 +77,15 @@ title('Отфильтрованные угловые координаты цел
 grid on;
 
 figure;
-mesh(scanning_phi, scanning_theta, mean(abs(filtered_beams), 3));
-xlabel('Азимут (градусы)');
-ylabel('Угол места (градусы)');
-title('Отфировальные угловые координаты цели (mean)');
-grid on;
+plot(scanning_phi, max(abs(filtered_beams), [], 3)')
+
+figure;
+hold on; grid on;
+plot(scanning_phi, max(abs(filtered_beams(elev_idx, :, :)), [], 3), 'DisplayName', 'max')
+plot(scanning_phi, rms(filtered_beams(elev_idx, :, :), 3), 'DisplayName', 'rms')
+xlabel('Азимут (градусы)')
+ylabel('Амплитуда')
+legend;
 
 figure;
 mesh(scanning_phi, scanning_theta, rms(abs(filtered_beams), 3));
@@ -91,12 +96,33 @@ grid on;
 
 figure;
 mesh(1 : size(filtered_beams, 3), ...
-    scanning_theta, ...
-    reshape(max(abs(filtered_beams), [], 2), size(filtered_beams, 2), size(filtered_beams, 3)));
+    scanning_phi, ...
+    reshape(max(abs(beams), [], 1), size(beams, 2), size(beams, 3)));
 xlabel('Дальность (отсчеты)');
-ylabel('Угол места (градусы)');
-title('Отфильтрованные координаты цели (rms)');
+ylabel('Азимут (градусы)');
+title('координаты цели (rms)');
 grid on;
+
+
+figure;
+azimuth_range_filtered = reshape(max(abs(filtered_beams), [], 1), size(filtered_beams, 2), size(filtered_beams, 3));
+mesh(1 : size(filtered_beams, 3), ...
+    scanning_phi, ...
+    azimuth_range_filtered);
+xlabel('Дальность (отсчеты)');
+ylabel('Азимут (градусы)');
+title('Отфильтрованные координаты цели (max)');
+grid on;
+
+figure;
+imagesc(r_idx :  750, ...
+    scanning_phi, ...
+    azimuth_range_filtered(:, r_idx : 750));
+xlabel('Дальность (отсчеты)');
+ylabel('Азимут (градусы)');
+title('Отфильтрованные координаты цели (max)');
+grid on;
+
 
 %% Results
 all_max = max(abs(beams), [], [3, 2, 1])
