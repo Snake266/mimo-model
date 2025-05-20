@@ -40,7 +40,7 @@ clear tmp_plane_data;
 window = 2;
 
 filtered_beams = beams;
-filtered_beams(:, :, range_idx - window / 2 : range_idx + window / 2) = 0;
+filtered_beams(:, :, r_idx - window / 2 : r_idx + window / 2) = 0;
 
 
 
@@ -79,3 +79,21 @@ xlabel('Азимут (градусы)');
 ylabel('Угол места (градусы)');
 title('Отфильтрованные угловые координаты цели (rms)');
 grid on;
+
+figure;
+mesh(1 : size(filtered_beams, 3), ...
+    scanning_theta, ...
+    reshape(max(abs(filtered_beams), [], 2), size(filtered_beams, 2), size(filtered_beams, 3)));
+xlabel('Дальность (отсчеты)');
+ylabel('Угол места (градусы)');
+title('Отфильтрованные координаты цели (rms)');
+grid on;
+
+%% Results
+all_max = max(abs(beams), [], [3, 2, 1])
+all_rms = rms(beams, [3, 2, 1])
+all_mean = mean(abs(beams), [3, 2, 1])
+
+all_filtered_max = max(abs(filtered_beams), [], [3, 2, 1])
+all_filtered_rms = rms(filtered_beams, [3, 2, 1])
+all_filtered_mean = mean(abs(filtered_beams), [3, 2, 1])

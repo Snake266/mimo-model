@@ -22,8 +22,9 @@ tx_e = (0 : (Ntx - 1)) * d;
 rx_e = ((0 : (Nrx - 1)) * d)';
 
 %% Generate M-seq
-ps_phases = get_mseq_n_times(16, 1);
-pack_len = fix((2^16-1)/Ntx);
+n = 12;
+ps_phases = get_mseq_n_times(n, 1);
+pack_len = fix((2^n-1)/Ntx);
 new_pss = zeros(Ntx, pack_len);
 for i = 1 : Ntx - 1
     start_index = ((i-1) * pack_len) + 1;
@@ -45,16 +46,23 @@ clear tmp_plane_data;
 [r_max, r_idx] = max(beams(elev_idx, azim_idx, :));
 
 %% filter maximum
-window = 10;
+window = 2;
 
 filtered_beams = beams;
-filtered_beams(:, :, r_idx - window : r_idx + window) = 0;
+filtered_beams(:, :, r_idx - window / 2 : r_idx + window / 2) = 0;
 
 
 
 %% Visualisation
 figure;
 mesh(scanning_phi, scanning_theta, max(abs(beams), [], 3));
+xlabel('Азимут (градусы)');
+ylabel('Угол места (градусы)');
+title('Угловые координаты цели (regular max)');
+grid on;
+
+figure;
+imagesc(scanning_phi, scanning_theta, max(abs(beams), [], 3));
 xlabel('Азимут (градусы)');
 ylabel('Угол места (градусы)');
 title('Угловые координаты цели (regular max)');
@@ -80,3 +88,21 @@ xlabel('Азимут (градусы)');
 ylabel('Угол места (градусы)');
 title('Отфильтрованные угловые координаты цели (rms)');
 grid on;
+
+figure;
+mesh(1 : size(filtered_beams, 3), ...
+    scanning_theta, ...
+    reshape(max(abs(filtered_beams), [], 2), size(filtered_beams, 2), size(filtered_beams, 3)));
+xlabel('Дальность (отсчеты)');
+ylabel('Угол места (градусы)');
+title('Отфильтрованные координаты цели (rms)');
+grid on;
+
+%% Results
+all_max = max(abs(beams), [], [3, 2, 1])
+all_rms = rms(beams, [3, 2, 1])
+all_mean = mean(abs(beams), [3, 2, 1])
+
+all_filtered_max = max(abs(filtered_beams), [], [3, 2, 1])
+all_filtered_rms = rms(filtered_beams, [3, 2, 1])
+all_filtered_mean = mean(abs(filtered_beams), [3, 2, 1])
