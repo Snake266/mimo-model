@@ -24,8 +24,8 @@ rx_e = ((0 : (Nrx - 1)) * d)';
 ps_phases = get_mseq_n_times(9, 8);
 
 abs_scan_limit = 1/lambda;
-scanning_theta = -25 : 1 : 25;
-scanning_phi = -5 : 1 : 45;
+scanning_theta = -45 : 1 : 50;
+scanning_phi = -34 : 1 : 40;
 
 beams = mimo_model(ps_phases, tx_e, rx_e, scanning_phi, scanning_theta, targets, lambda);
 
@@ -42,52 +42,6 @@ window = 2;
 filtered_beams = beams;
 filtered_beams(:, :, r_idx - window / 2 : r_idx + window / 2) = 0;
 
-
-
-%% Visualisation
-figure;
-mesh(scanning_phi, scanning_theta, max(abs(beams), [], 3));
-xlabel('Азимут (градусы)');
-ylabel('Угол места (градусы)');
-title('Угловые координаты цели (regular max)');
-grid on;
-
-figure;
-imagesc(scanning_phi, scanning_theta, max(abs(beams), [], 3));
-xlabel('Азимут (градусы)');
-ylabel('Угол места (градусы)');
-title('Угловые координаты цели (regular max)');
-grid on;
-
-figure;
-mesh(scanning_phi, scanning_theta, max(abs(filtered_beams), [], 3));
-xlabel('Азимут (градусы)');
-ylabel('Угол места (градусы)');
-title('Отфильтрованные угловые координаты цели (max)');
-grid on;
-
-figure;
-mesh(scanning_phi, scanning_theta, mean(abs(filtered_beams), 3));
-xlabel('Азимут (градусы)');
-ylabel('Угол места (градусы)');
-title('Отфировальные угловые координаты цели (mean)');
-grid on;
-
-figure;
-mesh(scanning_phi, scanning_theta, rms(abs(filtered_beams), 3));
-xlabel('Азимут (градусы)');
-ylabel('Угол места (градусы)');
-title('Отфильтрованные угловые координаты цели (rms)');
-grid on;
-
-figure;
-mesh(1 : size(filtered_beams, 3), ...
-    scanning_theta, ...
-    reshape(max(abs(filtered_beams), [], 2), size(filtered_beams, 2), size(filtered_beams, 3)));
-xlabel('Дальность (отсчеты)');
-ylabel('Угол места (градусы)');
-title('Отфильтрованные координаты цели (rms)');
-grid on;
 
 %% Results
 all_max = max(abs(beams), [], [3, 2, 1])
