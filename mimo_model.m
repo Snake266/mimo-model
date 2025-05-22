@@ -24,11 +24,11 @@ function beams = mimo_model(tx_signals, tx_e, rx_e, azims, elevs, targets, lambd
     end
 
     %% Virtual array forming
-    virt_array = zeros(Nrx, Ntx, 2*length(tx_signals) - 1);
+    virt_array = zeros(Nrx, Ntx, length(tx_signals));
     for rx = 1 : Nrx
         for tx = 1 : Ntx
             corr_val = xcorr(received_signals(rx, :), tx_signals(tx, :));
-            virt_array(rx, tx, :) = corr_val;
+            virt_array(rx, tx, :) = corr_val(1 : length(tx_signals));
         end
     end
 
